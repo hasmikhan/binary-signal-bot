@@ -15,7 +15,7 @@ INTERVAL = "5min"
 HIGHER_INTERVAL = "15min"
 EXPIRY_MINUTES = 5
 ADVANCE_NOTICE_MINUTES = 5
-CHECK_GAP = 30
+CHECK_GAP = 300   # আগে ছিল 30 সেকেন্ড, তাতে API credit অনেক দ্রুত শেষ হয়ে যাচ্ছিল
 
 ADX_PERIOD = 14
 ADX_THRESHOLD = 12   # আগে ছিল 20, খুব কম signal আসছিল তাই কমিয়ে দেওয়া হলো
