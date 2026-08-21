@@ -36,6 +36,8 @@ def get_price_data(symbol, interval=INTERVAL):
     }
     response = requests.get(url, params=params, timeout=15)
     data = response.json()
+    if "values" not in data:
+        print(f"API response issue for {symbol} ({interval}): {data}")
     return data.get("values", [])
 
 
@@ -235,6 +237,7 @@ def find_signal():
             candles_higher = get_price_data(symbol, HIGHER_INTERVAL)
 
             if len(candles_main) < 20 or len(candles_higher) < 8:
+                print(f"{symbol} | Not enough data yet. main_candles={len(candles_main)} higher_candles={len(candles_higher)}")
                 continue
 
             signal, rsi, adx, macd_hist = calculate_signal(candles_main, candles_higher)
