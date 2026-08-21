@@ -34,7 +34,7 @@ def get_price_data(symbol, interval=INTERVAL):
         "outputsize": 30,
         "apikey": TWELVE_API_KEY
     }
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, timeout=15)
     data = response.json()
     return data.get("values", [])
 
@@ -224,7 +224,7 @@ def calculate_signal(candles_main, candles_higher):
 def send_telegram_message(text):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {"chat_id": TELEGRAM_CHAT_ID, "text": text}
-    r = requests.post(url, data=payload)
+    r = requests.post(url, data=payload, timeout=15)
     return r.json()
 
 
