@@ -1,7 +1,9 @@
 import requests
 import time
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
+BD_TZ = timezone(timedelta(hours=6))  # Bangladesh Standard Time (UTC+6)
 
 # ---------- CONFIG ----------
 # Railway/cloud এ deploy করলে এগুলো Environment Variable হিসেবে সেট করবেন।
@@ -269,7 +271,7 @@ def run_bot():
         display_action = "CALL" if action == "BUY" else "PUT"
         symbol_clean = symbol.replace("/", "")
 
-        entry_time_dt = datetime.now() + timedelta(minutes=ADVANCE_NOTICE_MINUTES)
+        entry_time_dt = datetime.now(BD_TZ) + timedelta(minutes=ADVANCE_NOTICE_MINUTES)
         entry_time_str = entry_time_dt.strftime("%I:%M %p").upper()
 
         notice_msg = (f"📊 {symbol_clean} SIGNAL\n\n"
