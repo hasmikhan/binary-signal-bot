@@ -1,9 +1,46 @@
 import requests
 import time
 import os
+import json
 from datetime import datetime, timedelta, timezone
 
 BD_TZ = timezone(timedelta(hours=6))  # Bangladesh Standard Time (UTC+6)
+
+HISTORY_FILE = "trade_history.json"
+
+
+def load_history():
+    if os.path.exists(HISTORY_FILE):
+        try:
+            with open(HISTORY_FILE, "r") as f:
+                return json.load(f)
+        except Exception:
+            return []
+    return []
+
+
+def save_trade(symbol, action, entry_price, exit_price, result):
+    history = load_history()
+    history.append({
+        "time": datetime.now(BD_TZ).strftime("%Y-%m-%d %H:%M:%S"),
+        "symbol": symbol,
+        "action": action,
+        "entry_price": entry_price,
+        "exit_price": exit_price,
+        "result": result
+    })
+    with open(HISTORY_FILE, "w") as f:
+        json.dump(history, f, indent=2)
+    return history
+
+
+def get_win_rate_summary(history):
+    total = len(history)
+    if total == 0:
+        return "No trades recorded yet."
+    wins = sum(1 for h in history if h["result"] == "WIN")
+    win_rate = (wins / total) * 100
+    return f"{wins}/{total} WIN ({win_rate:.1f}%)"
 
 # ---------- CONFIG ----------
 # Railway/cloud এ deploy করলে এগুলো Environment Variable হিসেবে সেট করবেন।
@@ -290,13 +327,19 @@ def run_bot():
         current_price = float(candles[0]["close"])
 
         if action == "BUY":
-            result = "WIN ✅" if current_price > entry_price else "LOSS ❌"
+            result = "WIN" if current_price > entry_price else "LOSS"
         else:
-            result = "WIN ✅" if current_price < entry_price else "LOSS ❌"
+            result = "WIN" if current_price < entry_price else "LOSS"
 
-        result_msg = f"📈 RESULT: {symbol_clean}\n\nOUTCOME: {result}"
+        history = save_trade(symbol, display_action, entry_price, current_price, result)
+        stats = get_win_rate_summary(history)
+        result_emoji = "✅" if result == "WIN" else "❌"
+
+        result_msg = (f"📈 RESULT: {symbol_clean}\n\n"
+                       f"OUTCOME: {result} {result_emoji}\n"
+                       f"OVERALL STATS: {stats}")
         send_telegram_message(result_msg)
-        print(f"Result: {result}\n")
+        print(f"Result: {result} | Overall: {stats}\n")
 
         time.sleep(5)
 
