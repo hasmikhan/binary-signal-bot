@@ -31,7 +31,7 @@ def get_price_data(symbol, interval=INTERVAL):
     params = {
         "symbol": symbol,
         "interval": interval,
-        "outputsize": 30,
+        "outputsize": 50,
         "apikey": TWELVE_API_KEY
     }
     response = requests.get(url, params=params, timeout=15)
