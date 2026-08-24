@@ -42,6 +42,21 @@ def get_win_rate_summary(history):
     win_rate = (wins / total) * 100
     return f"{wins}/{total} WIN ({win_rate:.1f}%)"
 
+
+def is_market_closed():
+    """
+    Forex market শনিবার সারাদিন এবং রবিবার (বাংলাদেশ সময় রাত ১১টার আগ পর্যন্ত) বন্ধ থাকে।
+    এই সময়ে price move করে না বা পুরনো (stale) data আসতে পারে, তাই signal স্কিপ করা হবে।
+    """
+    now = datetime.now(BD_TZ)
+    weekday = now.weekday()  # Monday=0 ... Saturday=5, Sunday=6
+
+    if weekday == 5:  # Saturday - পুরো দিন বন্ধ
+        return True
+    if weekday == 6 and now.hour < 23:  # Sunday - রাত ১১টার আগ পর্যন্ত বন্ধ
+        return True
+    return False
+
 # ---------- CONFIG ----------
 # Railway/cloud এ deploy করলে এগুলো Environment Variable হিসেবে সেট করবেন।
 # লোকাল কম্পিউটারে টেস্ট করার জন্য fallback ভ্যালু হিসেবে আগেরগুলো রাখা আছে।
@@ -270,6 +285,10 @@ def send_telegram_message(text):
 
 
 def find_signal():
+    if is_market_closed():
+        print("Market is closed (weekend). Skipping signal check.")
+        return None, None
+
     for symbol in SYMBOLS:
         try:
             candles_main = get_price_data(symbol, INTERVAL)
